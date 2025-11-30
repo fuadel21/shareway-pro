@@ -1,0 +1,117 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { useOutletContext, useNavigate } from 'react-router-dom';
+import { db } from '@/lib/firebase';
+import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button.jsx';
+import { Card } from '@/components/ui/card.jsx';
+import { AlertCircle, Calendar, CheckCheck, Clock, Users } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+
+// Componente ListItem (sin cambios)
+const ListItem = ({ item, navigate }) => {
+    const originAddress = item.origin?.address?.split(',')[0] || 'Origen';
+    const destinationAddress = item.destination?.address?.split(',')[0] || 'Destino';
+    const title = `${originAddress} → ${destinationAddress}`;
+    const date = item.dateTime?.toDate ? format(item.dateTime.toDate(), "d MMM, HH:mm'h'", { locale: es }) : 'Fecha no disponible';
+    
+    let statusInfo = { text: '-', icon: AlertCircle, color: 'bg-gray-100 text-gray-800' };
+    if (item.status === 'scheduled') statusInfo = { text: 'Programado', icon: Calendar, color: 'bg-blue-100 text-blue-800' };
+    if (item.status === 'active') statusInfo = { text: 'En curso', icon: Clock, color: 'bg-green-100 text-green-800' };
+    if (item.status === 'completed') statusInfo = { text: 'Completado', icon: CheckCheck, color: 'bg-gray-100 text-gray-800' };
+    if (item.status === 'cancelled') statusInfo = { text: 'Cancelado', icon: AlertCircle, color: 'bg-red-100 text-red-800' };
+
+    return (
+        <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/ride/${item.id}`)}>
+            <div className="p-3">
+                <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-bold text-md truncate pr-2">{title}</h3>
+                    <span className={cn("flex items-center px-2 py-0.5 text-xs font-semibold rounded-full whitespace-nowrap", statusInfo.color)}>
+                        <statusInfo.icon className="h-3 w-3 mr-1.5" />
+                        {statusInfo.text}
+                    </span>
+                </div>
+                <p className="text-sm text-gray-500 mb-2 font-medium">{date}</p>
+                <div className="flex justify-between items-center text-sm mt-2">
+                    <div className="flex items-center text-gray-600"><Users className="h-4 w-4 mr-1.5" /> {item.passengers?.length || 0} / {(item.passengers?.length || 0) + (item.seatsAvailable || 0)}</div>
+                    <div className="font-bold text-md">{item.price ? `${item.price.toFixed(2)}€` : 'Gratis'}</div>
+                </div>
+            </div>
+        </Card>
+    );
+};
+
+const MyRides = () => {
+    const { profile } = useOutletContext();
+    const navigate = useNavigate();
+    
+    const [activeTab, setActiveTab] = useState('upcoming');
+    const [myRides, setMyRides] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!profile?.uid) {
+            setLoading(false);
+            return;
+        }
+
+        setLoading(true);
+
+        // --- LÓGICA SIMPLIFICADA Y FINAL ---
+        // Creamos una única consulta que busca viajes donde el usuario es conductor O pasajero.
+        // Para ello, hemos tenido que añadir el campo `participantIds` al crear y reservar.
+        const ridesQuery = query(
+            collection(db, 'rides'),
+            where('participantIds', 'array-contains', profile.uid)
+        );
+
+        const unsubscribe = onSnapshot(ridesQuery, (snapshot) => {
+            const rides = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setMyRides(rides);
+            setLoading(false);
+        }, (error) => {
+            console.error("Error al obtener los viajes:", error);
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, [profile?.uid]);
+
+    const { upcoming, history } = useMemo(() => {
+        const now = new Date();
+        const upcomingRides = myRides
+            .filter(r => r.dateTime && r.dateTime.toDate() >= now)
+            .sort((a, b) => (a.dateTime?.toDate() || 0) - (b.dateTime?.toDate() || 0));
+
+        const historyRides = myRides
+            .filter(r => !r.dateTime || r.dateTime.toDate() < now)
+            .sort((a, b) => (b.dateTime?.toDate() || 0) - (a.dateTime?.toDate() || 0));
+
+        return { upcoming: upcomingRides, history: historyRides };
+    }, [myRides]);
+
+    const itemsToShow = activeTab === 'upcoming' ? upcoming : history;
+
+    return (
+        <div className="p-4 max-w-2xl mx-auto">
+            <h1 className="text-2xl font-bold mb-4">Mis Viajes</h1>
+            <div className="grid grid-cols-2 gap-2 mb-4 bg-gray-100 p-1 rounded-lg">
+                <Button variant={activeTab === 'upcoming' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('upcoming')}>Próximos</Button>
+                <Button variant={activeTab === 'history' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('history')}>Historial</Button>
+            </div>
+            <div className="space-y-3">
+                {loading ? (
+                     <div className="text-center py-10"><Loader2 className="h-8 w-8 mx-auto animate-spin" /></div>
+                ) : itemsToShow.length > 0 ? (
+                    itemsToShow.map(item => <ListItem key={item.id} item={item} navigate={navigate} />)
+                ) : (
+                    <div className="text-center py-10"><p className="text-gray-500">No hay viajes en esta sección.</p></div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default MyRides;

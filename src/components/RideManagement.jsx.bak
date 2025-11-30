@@ -1,0 +1,123 @@
+import React, { useState, useEffect } from 'react';
+import { doc, runTransaction, getDoc } from 'firebase/firestore';
+import { getFunctions, httpsCallable } from 'firebase/functions'; // <-- 1. Importaciones necesarias
+import { db } from '@/lib/firebase';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button.jsx';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Loader2, UserCheck, UserX } from 'lucide-react';
+
+// Función para obtener el perfil de un usuario
+const fetchUserProfile = async (uid) => {
+    const userRef = doc(db, 'users', uid);
+    const userSnap = await getDoc(userRef);
+    return userSnap.exists() ? { id: userSnap.id, ...userSnap.data() } : null;
+};
+
+const RideManagement = ({ ride }) => {
+    const [pendingProfiles, setPendingProfiles] = useState([]);
+    const [loadingProfiles, setLoadingProfiles] = useState(true);
+    const [processingId, setProcessingId] = useState(null);
+
+    // 2. Preparamos la llamada a la Cloud Function
+    const functions = getFunctions();
+    const confirmBookingAndTransfer = httpsCallable(functions, 'confirmBookingAndTransferFunds');
+
+    useEffect(() => {
+        const fetchProfiles = async () => {
+            setLoadingProfiles(true);
+            const profilePromises = ride.pendingPassengerUids.map(fetchUserProfile);
+            const profiles = await Promise.all(profilePromises);
+            setPendingProfiles(profiles.filter(p => p));
+            setLoadingProfiles(false);
+        };
+
+        if (ride.pendingPassengerUids.length > 0) {
+            fetchProfiles();
+        }
+    }, [ride.pendingPassengerUids]);
+
+    const handleManageRequest = async (passengerId, action) => {
+        setProcessingId(passengerId);
+        try {
+            const rideRef = doc(db, 'rides', ride.id);
+
+            // Primero, actualizamos el estado del viaje
+            await runTransaction(db, async (transaction) => {
+                const rideDoc = await transaction.get(rideRef);
+                if (!rideDoc.exists()) throw new Error("El viaje ya no existe.");
+
+                const currentData = rideDoc.data();
+                const newPending = currentData.pendingPassengerUids.filter(uid => uid !== passengerId);
+                let newPassengers = currentData.passengerUids;
+                let newSeats = currentData.seatsAvailable;
+
+                if (action === 'accept') {
+                    if (newSeats <= 0) throw new Error("No hay asientos disponibles.");
+                    newPassengers = [...newPassengers, passengerId];
+                    newSeats -= 1;
+                }
+
+                transaction.update(rideRef, {
+                    pendingPassengerUids: newPending,
+                    passengerUids: newPassengers,
+                    seatsAvailable: newSeats,
+                });
+            });
+
+            // 3. Si se aceptó, llamamos a la función que transfiere el dinero
+            if (action === 'accept') {
+                await confirmBookingAndTransfer({ rideId: ride.id, passengerId: passengerId });
+            }
+
+            toast.success(`Solicitud ${action === 'accept' ? 'aceptada' : 'rechazada'} con éxito`);
+
+        } catch (error) {
+            console.error("Error al gestionar la solicitud:", error);
+            toast.error("Error al gestionar la solicitud", { description: error.message });
+        } finally {
+            setProcessingId(null);
+        }
+    };
+
+    if (loadingProfiles) return <div className="flex justify-center p-4"><Loader2 className="animate-spin"/></div>;
+
+    return (
+        <div className="space-y-4">
+            <h3 className="font-semibold text-lg text-amber-700">Solicitudes Pendientes ({pendingProfiles.length})</h3>
+            {pendingProfiles.map(profile => (
+                <div key={profile.id} className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                        <Avatar>
+                            <AvatarImage src={profile.photoURL} alt={profile.displayName} />
+                            <AvatarFallback>{profile.displayName?.[0]}</AvatarFallback>
+                        </Avatar>
+                        <p className="font-semibold">{profile.displayName}</p>
+                    </div>
+                    <div className="flex gap-2">
+                        <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="text-red-500 hover:bg-red-100 hover:text-red-600"
+                            onClick={() => handleManageRequest(profile.id, 'reject')}
+                            disabled={processingId === profile.id}
+                        >
+                            {processingId === profile.id ? <Loader2 className="h-4 w-4 animate-spin"/> : <UserX className="h-5 w-5" />}
+                        </Button>
+                        <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="text-green-500 hover:bg-green-100 hover:text-green-600"
+                            onClick={() => handleManageRequest(profile.id, 'accept')}
+                            disabled={processingId === profile.id || ride.seatsAvailable <= 0}
+                        >
+                             {processingId === profile.id ? <Loader2 className="h-4 w-4 animate-spin"/> : <UserCheck className="h-5 w-5" />}
+                        </Button>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+export default RideManagement;

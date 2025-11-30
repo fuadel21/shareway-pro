@@ -1,0 +1,36 @@
+# Dependencies
+/node_modules
+
+# Build output
+/dist
+
+# Log files
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local environment variables
+.env
+.env.local
+.env.*
+
+# Ignore .env files in subdirectories, like /functions
+**/.env
+**/.env.local
+**/.env.*
+
+# IDE-specific
+.idea/
+.vscode/
+
+# Temporary files
+/Temp/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Custom configuration files with secrets
+#/src/lib/firebaseConfig.js#

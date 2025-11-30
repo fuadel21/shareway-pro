@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Paleta Atardecer Cálido - Modo Claro */
+    --background: 35 33% 95%; /* Arena Cálida */
+    --foreground: 25 25% 15%; /* Marrón Oscuro */
+
+    --card: 35 20% 98%; /* Blanco Roto */
+    --card-foreground: 25 25% 15%;
+
+    --popover: 35 20% 98%;
+    --popover-foreground: 25 25% 15%;
+
+    /* Naranja Atardecer */
+    --primary: 30 80% 55%;
+    --primary-foreground: 30 50% 98%;
+
+    /* Amarillo Sol */
+    --secondary: 45 70% 80%;
+    --secondary-foreground: 30 50% 10%;
+
+    --muted: 40 40% 96%;
+    --muted-foreground: 35 15% 45%;
+
+    /* Acento Coral */
+    --accent: 15 85% 60%;
+    --accent-foreground: 20 50% 98%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 35 25% 90%;
+    --input: 35 25% 90%;
+    --ring: 30 80% 55%;
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    /* Paleta Atardecer Cálido - Modo Noche */
+    --background: 25 15% 10%; /* Café Profundo */
+    --foreground: 35 25% 95%;
+
+    --card: 25 15% 12%;
+    --card-foreground: 35 25% 95%;
+
+    --popover: 25 15% 10%;
+    --popover-foreground: 35 25% 95%;
+
+    --primary: 30 80% 65%;
+    --primary-foreground: 30 50% 98%;
+
+    --secondary: 45 70% 70%;
+    --secondary-foreground: 30 50% 98%;
+
+    --muted: 30 15% 20%;
+    --muted-foreground: 35 20% 65%;
+
+    --accent: 15 85% 65%;
+    --accent-foreground: 20 50% 98%;
+
+    --destructive: 0 72.2% 50.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 30 15% 20%;
+    --input: 30 15% 20%;
+    --ring: 30 80% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Fix para iconos de Leaflet */
+.leaflet-marker-icon, .leaflet-marker-shadow {
+  background: none;
+  border: none;
+}

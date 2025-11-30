@@ -1,0 +1,38 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // --- Reglas para las imágenes de perfil ---
+    match /profile-images/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null 
+                   && request.auth.uid == userId 
+                   && request.resource.size < 5 * 1024 * 1024 
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    // --- Reglas para las imágenes de los vehículos ---
+    match /vehicle-images/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null 
+                   && request.auth.uid == userId
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    // --- ¡REGLA AÑADIDA! ---
+    // Reglas para los documentos de verificación
+    match /verifications/{userId}/{allPaths=**} {
+      // Los documentos de verificación son privados y no deben ser legibles públicamente.
+      // El acceso se gestiona mediante URLs seguras desde la app.
+      allow read: if false;
+
+      // Solo el propietario de la cuenta puede subir sus documentos de verificación.
+      allow write: if request.auth != null 
+                   && request.auth.uid == userId
+                   && request.resource.size < 5 * 1024 * 1024 // Límite de 5MB
+                   && request.resource.contentType.matches('image/.*'); // Solo imágenes
+    }
+  }
+}

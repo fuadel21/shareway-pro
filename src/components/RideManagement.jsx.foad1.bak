@@ -1,0 +1,160 @@
+import React, { useState, useEffect } from 'react';
+import { doc, runTransaction, getDoc, updateDoc } from 'firebase/firestore';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import { db } from '@/lib/firebase';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button.jsx';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Loader2, UserCheck, UserX, Rocket, Flag } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+
+const fetchUserProfile = async (uid) => {
+    if (!uid) return null;
+    const userRef = doc(db, 'users', uid);
+    const userSnap = await getDoc(userRef);
+    return userSnap.exists() ? { id: userSnap.id, ...userSnap.data() } : null;
+};
+
+const RideManagement = ({ ride }) => {
+    const [pendingProfiles, setPendingProfiles] = useState([]);
+    const [confirmedProfiles, setConfirmedProfiles] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [processingId, setProcessingId] = useState(null);
+
+    const functions = getFunctions();
+    const confirmBookingAndTransfer = httpsCallable(functions, 'confirmBookingAndTransferFunds');
+
+    useEffect(() => {
+        const fetchProfiles = async () => {
+            setLoading(true);
+            const pendingPromises = ride.pendingPassengerUids.map(fetchUserProfile);
+            const confirmedPromises = ride.passengerUids.map(fetchUserProfile);
+            const [pending, confirmed] = await Promise.all([Promise.all(pendingPromises), Promise.all(confirmedPromises)]);
+            setPendingProfiles(pending.filter(p => p));
+            setConfirmedProfiles(confirmed.filter(p => p));
+            setLoading(false);
+        };
+        fetchProfiles();
+    }, [ride.pendingPassengerUids, ride.passengerUids]);
+
+    const handleManageRequest = async (passengerId, action) => {
+        setProcessingId(passengerId);
+        try {
+            await runTransaction(db, async (t) => {
+                const rideRef = doc(db, 'rides', ride.id);
+                const rideDoc = await t.get(rideRef);
+                if (!rideDoc.exists()) throw new Error("El viaje ya no existe.");
+                const data = rideDoc.data();
+
+                t.update(rideRef, {
+                    pendingPassengerUids: data.pendingPassengerUids.filter(uid => uid !== passengerId),
+                    passengerUids: action === 'accept' ? [...data.passengerUids, passengerId] : data.passengerUids,
+                    seatsAvailable: action === 'accept' ? data.seatsAvailable - 1 : data.seatsAvailable,
+                });
+            });
+            toast.success(`Solicitud ${action === 'accept' ? 'aceptada' : 'rechazada'}`);
+        } catch (error) {
+            toast.error("Error al gestionar la solicitud", { description: error.message });
+        } finally {
+            setProcessingId(null);
+        }
+    };
+
+    const handleStartTrip = async () => {
+        setProcessingId('start_trip');
+        try {
+            const rideRef = doc(db, 'rides', ride.id);
+            await updateDoc(rideRef, { status: 'active' });
+            toast.success("¡Viaje iniciado!", { description: "La geolocalización está activa." });
+        } catch (error) {
+            toast.error("Error al iniciar el viaje", { description: error.message });
+        } finally {
+            setProcessingId(null);
+        }
+    };
+
+    const handleFinalizeTripForPassenger = async (passengerId) => {
+        setProcessingId(passengerId);
+        try {
+            // 1. Transferimos los fondos
+            await confirmBookingAndTransfer({ rideId: ride.id, passengerId });
+            toast.success("Pago completado para el pasajero.");
+
+            // 2. Opcional: Marcar al pasajero como "dejado" (droppedOff)
+            // Esto requeriría añadir un nuevo campo en el documento del viaje
+
+        } catch (error) {
+            console.error("Error al finalizar el viaje para el pasajero:", error);
+            toast.error("Error en el pago", { description: error.message });
+        } finally {
+            setProcessingId(null);
+        }
+    };
+
+    if (loading) return <div className="flex justify-center p-4"><Loader2 className="animate-spin"/></div>;
+
+    return (
+        <div className="space-y-6">
+            {/* Solicitudes Pendientes */}
+            {ride.status === 'scheduled' && pendingProfiles.length > 0 && (
+                <div>
+                    <h3 className="font-semibold text-lg text-amber-700">Solicitudes Pendientes ({pendingProfiles.length})</h3>
+                    <div className="space-y-2 mt-2">
+                        {pendingProfiles.map(p => <PassengerCard key={p.id} profile={p} onManage={(action) => handleManageRequest(p.id, action)} processing={processingId === p.id} isPending />)}
+                    </div>
+                </div>
+            )}
+
+            {/* Botón de Iniciar Viaje */}
+            {ride.status === 'scheduled' && confirmedProfiles.length > 0 && pendingProfiles.length === 0 && (
+                 <Button size="lg" className="w-full bg-green-600 hover:bg-green-700" onClick={handleStartTrip} disabled={processingId === 'start_trip'}>
+                    {processingId === 'start_trip' ? <Loader2 className="h-5 w-5 mr-2 animate-spin"/> : <Rocket className="h-5 w-5 mr-2"/>}
+                    Iniciar Viaje
+                </Button>
+            )}
+
+            <Separator/>
+
+            {/* Pasajeros Confirmados */}
+            <div>
+                <h3 className="font-semibold text-lg">Pasajeros Confirmados ({confirmedProfiles.length})</h3>
+                {confirmedProfiles.length > 0 ? (
+                    <div className="space-y-2 mt-2">
+                        {confirmedProfiles.map(p => <PassengerCard key={p.id} profile={p} onFinalize={() => handleFinalizeTripForPassenger(p.id)} processing={processingId === p.id} isConfirmed tripStatus={ride.status} />)}
+                    </div>
+                ) : (
+                    <p className="text-sm text-gray-500 mt-2">Aún no hay pasajeros confirmados.</p>
+                )}
+            </div>
+        </div>
+    );
+};
+
+// Componente de tarjeta de pasajero reutilizable
+const PassengerCard = ({ profile, onManage, onFinalize, processing, isPending, isConfirmed, tripStatus }) => (
+    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+        <div className="flex items-center gap-3">
+            <Avatar>
+                <AvatarImage src={profile.photoURL} alt={profile.displayName} />
+                <AvatarFallback>{profile.displayName?.[0]}</AvatarFallback>
+            </Avatar>
+            <p className="font-semibold">{profile.displayName}</p>
+        </div>
+        <div className="flex gap-2">
+            {isPending && (
+                <>
+                    <Button size="icon" variant="ghost" className="text-red-500 hover:bg-red-100" onClick={() => onManage('reject')} disabled={processing}><UserX className="h-5 w-5" /></Button>
+                    <Button size="icon" variant="ghost" className="text-green-500 hover:bg-green-100" onClick={() => onManage('accept')} disabled={processing}><UserCheck className="h-5 w-5" /></Button>
+                </>
+            )}
+            {isConfirmed && tripStatus === 'active' && (
+                <Button size="sm" variant="outline" onClick={onFinalize} disabled={processing}>
+                    {processing ? <Loader2 className="h-4 w-4 animate-spin"/> : <Flag className="h-4 w-4"/>}
+                    <span className="ml-2">Finalizar</span>
+                </Button>
+            )}
+        </div>
+    </div>
+);
+
+export default RideManagement;
