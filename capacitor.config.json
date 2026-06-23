@@ -1,6 +1,0 @@
-{
-  "appId": "com.taxicompartido.app",
-  "appName": "Taxi Compartido",
-  "webDir": "dist",
-  "bundledWebRuntime": false
-}
