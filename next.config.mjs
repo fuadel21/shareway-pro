@@ -1,14 +1,10 @@
-/** @type {import('next').NextConfig} */
+import path from 'path';
+
 const nextConfig = {
   reactStrictMode: true,
-  async redirects() {
-    return [
-      {
-        source: '/reservar',
-        destination: '/#buscar',
-        permanent: false
-      }
-    ];
+  webpack(config) {
+    config.resolve.alias['@'] = path.resolve(process.cwd());
+    return config;
   }
 };
 
