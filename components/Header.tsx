@@ -10,7 +10,7 @@ export default function Header() {
       <nav className="nav" aria-label="Navegación principal">
         <Link href="/trenes">Trenes</Link>
         <Link href="/autobuses">Autobuses</Link>
-        <Link href="/transfers">Transfers</Link>
+        <Link href="/traslados">Traslados</Link>
         <Link href="/contacto">Contacto</Link>
       </nav>
     </header>
