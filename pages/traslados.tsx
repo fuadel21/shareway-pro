@@ -1,5 +1,29 @@
-import SearchForm from '@/components/SearchForm';
-
 export default function TrasladosPage() {
-  return <main className="page-wrap"><section className="page-hero"><p className="eyebrow">Traslados</p><h1>Solicita un traslado.</h1><p>Aeropuerto, estación, hotel y eventos.</p></section><SearchForm defaultMode="transfer" /></main>;
+  return (
+    <main className="page-wrap">
+      <section className="page-hero">
+        <p className="eyebrow">Transfers privados</p>
+        <h1>Solicita tu traslado.</h1>
+        <p>Servicio para aeropuerto, estacion, hotel, eventos y rutas privadas. Envia origen, destino, fecha, hora, pasajeros y equipaje.</p>
+      </section>
+      <section className="content-section">
+        <h2>Datos necesarios</h2>
+        <ul className="clean-list">
+          <li>Origen y destino exacto</li>
+          <li>Fecha y hora de recogida</li>
+          <li>Numero de pasajeros y maletas</li>
+          <li>Vuelo, hotel o estacion si aplica</li>
+        </ul>
+      </section>
+      <section className="cta-section">
+        <p className="eyebrow">Presupuesto rapido</p>
+        <h2>Contacto directo</h2>
+        <p>Usa la pagina de contacto para enviar tu solicitud de traslado.</p>
+        <div className="hero-actions center-actions">
+          <a className="primary-link" href="/contacto">Enviar solicitud</a>
+          <a className="secondary-link" href="/#buscar">Buscar otro viaje</a>
+        </div>
+      </section>
+    </main>
+  );
 }
