@@ -1,4 +1,6 @@
 export default function TrasladosPage() {
+  const whatsappText = encodeURIComponent('Hola, quiero solicitar un presupuesto de transfer en ShareWay Pro. Origen: Destino: Fecha: Hora: Pasajeros: Maletas:');
+
   return (
     <main className="page-wrap">
       <section className="page-hero">
@@ -18,9 +20,9 @@ export default function TrasladosPage() {
       <section className="cta-section">
         <p className="eyebrow">Presupuesto rapido</p>
         <h2>Contacto directo</h2>
-        <p>Usa la pagina de contacto para enviar tu solicitud de traslado.</p>
+        <p>Envia tu solicitud por la ruta interna de ShareWay Pro.</p>
         <div className="hero-actions center-actions">
-          <a className="primary-link" href="/contacto">Enviar solicitud</a>
+          <a className="primary-link" href={`/whatsapp?text=${whatsappText}`}>Enviar por WhatsApp</a>
           <a className="secondary-link" href="/#buscar">Buscar otro viaje</a>
         </div>
       </section>
