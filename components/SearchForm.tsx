@@ -1,7 +1,25 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
-import { buildOmioAffiliateUrl, TravelMode } from '@/lib/omio';
+import type { TravelMode } from '@/lib/omio';
+
+function buildShareWayRedirectUrl(params: {
+  origin: string;
+  destination: string;
+  date: string;
+  passengers: string;
+  mode: TravelMode;
+}) {
+  const search = new URLSearchParams({
+    origin: params.origin,
+    destination: params.destination,
+    date: params.date,
+    passengers: params.passengers,
+    mode: params.mode
+  });
+
+  return `/go/omio?${search.toString()}`;
+}
 
 export default function SearchForm({ defaultMode = 'tren' }: { defaultMode?: TravelMode }) {
   const [origin, setOrigin] = useState('Madrid');
@@ -19,10 +37,10 @@ export default function SearchForm({ defaultMode = 'tren' }: { defaultMode?: Tra
       return;
     }
     if (mode === 'transfer') {
-      window.location.href = '/contacto';
+      window.location.href = `/contacto?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&date=${encodeURIComponent(date)}&passengers=${encodeURIComponent(passengers)}`;
       return;
     }
-    window.open(buildOmioAffiliateUrl({ origin, destination, date, passengers, mode }), '_blank', 'noopener,noreferrer');
+    window.open(buildShareWayRedirectUrl({ origin, destination, date, passengers, mode }), '_blank', 'noopener,noreferrer');
   }
 
   return (
@@ -42,7 +60,7 @@ export default function SearchForm({ defaultMode = 'tren' }: { defaultMode?: Tra
       </div>
       {error ? <p className="form-error">{error}</p> : null}
       <button className="primary-button" type="submit">{mode === 'transfer' ? 'Solicitar transfer' : 'Buscar viaje'}</button>
-      <p className="form-note">Trenes y autobuses abren el enlace de afiliado. Transfers llevan a contacto.</p>
+      <p className="form-note">Trenes y autobuses pasan por el redirect propio de ShareWay Pro. Transfers llevan a solicitud.</p>
     </form>
   );
 }
