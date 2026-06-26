@@ -3,6 +3,12 @@
 import { FormEvent, useState } from 'react';
 import type { TravelMode } from '@/lib/omio';
 
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void;
+  }
+}
+
 function buildInternalSearchUrl(params: {
   origin: string;
   destination: string;
@@ -21,6 +27,17 @@ function buildInternalSearchUrl(params: {
   return `/buscar?${search.toString()}`;
 }
 
+function trackSearch(params: { origin: string; destination: string; mode: TravelMode; passengers: string }) {
+  if (typeof window === 'undefined' || !window.gtag) return;
+
+  window.gtag('event', 'search_submit', {
+    travel_mode: params.mode,
+    origin: params.origin,
+    destination: params.destination,
+    passengers: params.passengers
+  });
+}
+
 export default function SearchForm({ defaultMode = 'tren' }: { defaultMode?: TravelMode }) {
   const [origin, setOrigin] = useState('Madrid');
   const [destination, setDestination] = useState('Valencia');
@@ -36,6 +53,9 @@ export default function SearchForm({ defaultMode = 'tren' }: { defaultMode?: Tra
       setError('Indica origen, destino y fecha.');
       return;
     }
+
+    trackSearch({ origin, destination, mode, passengers });
+
     if (mode === 'transfer') {
       window.location.href = `/contacto?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&date=${encodeURIComponent(date)}&passengers=${encodeURIComponent(passengers)}`;
       return;
