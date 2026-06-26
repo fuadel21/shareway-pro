@@ -1,13 +1,5 @@
 import SearchForm from '@/components/SearchForm';
-
-const popularRoutes = [
-  ['Barcelona', 'Madrid', 'Tren y bus'],
-  ['Barcelona', 'Girona', 'Transfer'],
-  ['Madrid', 'Valencia', 'Tren'],
-  ['Málaga', 'Sevilla', 'Autobús'],
-  ['Barcelona', 'Aeropuerto BCN', 'Transfer'],
-  ['Girona', 'Costa Brava', 'Transfer']
-];
+import { popularRoutes } from '@/lib/routes';
 
 const benefits = [
   ['Comparador rápido', 'Centraliza trenes, autobuses y transfers en una experiencia sencilla.'],
@@ -52,13 +44,13 @@ export default function HomePage() {
           <p>Una estructura pensada para SEO, enlaces de afiliado y solicitudes de transfers locales.</p>
         </div>
         <div className="route-grid">
-          {popularRoutes.map(([from, to, mode]) => (
-            <article className="route-card" key={`${from}-${to}`}>
+          {popularRoutes.map((route) => (
+            <article className="route-card" key={route.slug}>
               <div>
-                <span>{mode}</span>
-                <h3>{from} → {to}</h3>
+                <span>{route.type === 'transfer' ? 'Transfer' : route.type === 'tren' ? 'Tren' : 'Autobús'}</span>
+                <h3>{route.origin} → {route.destination}</h3>
               </div>
-              <a href="#buscar">Buscar</a>
+              <a href={`/rutas/${route.slug}`}>Ver ruta</a>
             </article>
           ))}
         </div>
