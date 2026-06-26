@@ -3,7 +3,7 @@
 import { FormEvent, useState } from 'react';
 import type { TravelMode } from '@/lib/omio';
 
-function buildShareWayRedirectUrl(params: {
+function buildInternalSearchUrl(params: {
   origin: string;
   destination: string;
   date: string;
@@ -18,7 +18,7 @@ function buildShareWayRedirectUrl(params: {
     mode: params.mode
   });
 
-  return `/go/omio?${search.toString()}`;
+  return `/buscar?${search.toString()}`;
 }
 
 export default function SearchForm({ defaultMode = 'tren' }: { defaultMode?: TravelMode }) {
@@ -40,7 +40,7 @@ export default function SearchForm({ defaultMode = 'tren' }: { defaultMode?: Tra
       window.location.href = `/contacto?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&date=${encodeURIComponent(date)}&passengers=${encodeURIComponent(passengers)}`;
       return;
     }
-    window.open(buildShareWayRedirectUrl({ origin, destination, date, passengers, mode }), '_blank', 'noopener,noreferrer');
+    window.location.href = buildInternalSearchUrl({ origin, destination, date, passengers, mode });
   }
 
   return (
@@ -60,7 +60,7 @@ export default function SearchForm({ defaultMode = 'tren' }: { defaultMode?: Tra
       </div>
       {error ? <p className="form-error">{error}</p> : null}
       <button className="primary-button" type="submit">{mode === 'transfer' ? 'Solicitar transfer' : 'Buscar viaje'}</button>
-      <p className="form-note">Trenes y autobuses pasan por el redirect propio de ShareWay Pro. Transfers llevan a solicitud.</p>
+      <p className="form-note">Primero verás el resumen en ShareWay Pro. Después podrás continuar al proveedor asociado.</p>
     </form>
   );
 }
