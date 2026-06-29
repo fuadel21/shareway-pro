@@ -8,6 +8,7 @@ export default function Header() {
         <span><strong>ShareWay</strong><small>Pro</small></span>
       </Link>
       <nav className="nav" aria-label="Navegación principal">
+        <Link href="/rutas">Rutas</Link>
         <Link href="/trenes">Trenes</Link>
         <Link href="/autobuses">Autobuses</Link>
         <Link href="/traslados">Traslados</Link>
