@@ -1,31 +1,94 @@
+import Head from 'next/head';
+import { FormEvent, useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+
+function first(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] || '' : value || '';
+}
+
 export default function TrasladosPage() {
-  const whatsappText = encodeURIComponent('Hola, quiero solicitar un presupuesto de transfer en ShareWay Pro. Origen: Destino: Fecha: Hora: Pasajeros: Maletas:');
+  const router = useRouter();
+  const [origin, setOrigin] = useState('');
+  const [destination, setDestination] = useState('');
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
+  const [passengers, setPassengers] = useState('1');
+  const [bags, setBags] = useState('');
+  const [notes, setNotes] = useState('');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!router.isReady) return;
+    setOrigin(first(router.query.origin));
+    setDestination(first(router.query.destination));
+    setDate(first(router.query.date));
+    setPassengers(first(router.query.passengers) || '1');
+  }, [router.isReady, router.query.origin, router.query.destination, router.query.date, router.query.passengers]);
+
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError('');
+
+    if (!origin || !destination || !date || !time) {
+      setError('Completa origen, destino, fecha y hora para solicitar el presupuesto.');
+      return;
+    }
+
+    const text = [
+      'Hola, quiero solicitar un presupuesto de transfer en ShareWay Pro.',
+      `Origen: ${origin}`,
+      `Destino: ${destination}`,
+      `Fecha: ${date}`,
+      `Hora: ${time}`,
+      `Pasajeros: ${passengers}`,
+      `Maletas: ${bags || 'No indicado'}`,
+      `Notas: ${notes || 'Sin notas'}`
+    ].join('\n');
+
+    window.location.href = `/whatsapp?text=${encodeURIComponent(text)}`;
+  }
 
   return (
-    <main className="page-wrap">
-      <section className="page-hero">
-        <p className="eyebrow">Transfers privados</p>
-        <h1>Solicita tu traslado.</h1>
-        <p>Servicio para aeropuerto, estacion, hotel, eventos y rutas privadas. Envia origen, destino, fecha, hora, pasajeros y equipaje.</p>
-      </section>
-      <section className="content-section">
-        <h2>Datos necesarios</h2>
-        <ul className="clean-list">
-          <li>Origen y destino exacto</li>
-          <li>Fecha y hora de recogida</li>
-          <li>Numero de pasajeros y maletas</li>
-          <li>Vuelo, hotel o estacion si aplica</li>
-        </ul>
-      </section>
-      <section className="cta-section">
-        <p className="eyebrow">Presupuesto rapido</p>
-        <h2>Contacto directo</h2>
-        <p>Envia tu solicitud por la ruta interna de ShareWay Pro.</p>
-        <div className="hero-actions center-actions">
-          <a className="primary-link" href={`/whatsapp?text=${whatsappText}`}>Enviar por WhatsApp</a>
-          <a className="secondary-link" href="/#buscar">Buscar otro viaje</a>
-        </div>
-      </section>
-    </main>
+    <>
+      <Head>
+        <title>Transfers privados | ShareWay Pro</title>
+        <meta name="description" content="Solicita presupuesto para transfers privados a aeropuertos, estaciones, hoteles y rutas de Costa Brava desde ShareWay Pro." />
+        <link rel="canonical" href="https://shareway.pro/traslados" />
+      </Head>
+      <main className="page-wrap transfer-page">
+        <section className="page-hero">
+          <p className="eyebrow">Transfers privados</p>
+          <h1>Solicita tu traslado.</h1>
+          <p>Servicio para aeropuerto, estacion, hotel, eventos y rutas privadas. Envia origen, destino, fecha, hora, pasajeros y equipaje.</p>
+        </section>
+
+        <section className="transfer-layout">
+          <form className="search-card transfer-form" onSubmit={submit}>
+            <div className="form-grid">
+              <label>Origen<input value={origin} onChange={(event) => setOrigin(event.target.value)} placeholder="Aeropuerto, hotel o ciudad" /></label>
+              <label>Destino<input value={destination} onChange={(event) => setDestination(event.target.value)} placeholder="Destino exacto" /></label>
+              <label>Fecha<input type="date" value={date} onChange={(event) => setDate(event.target.value)} /></label>
+              <label>Hora<input type="time" value={time} onChange={(event) => setTime(event.target.value)} /></label>
+              <label>Pasajeros<select value={passengers} onChange={(event) => setPassengers(event.target.value)}>{[1, 2, 3, 4, 5, 6, 7, 8].map((n) => <option key={n} value={n}>{n}</option>)}</select></label>
+              <label>Maletas<input value={bags} onChange={(event) => setBags(event.target.value)} placeholder="Ej. 2 grandes y 1 cabina" /></label>
+            </div>
+            <label className="full-label">Notas<textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Vuelo, hotel, silla infantil, ida y vuelta..." /></label>
+            {error ? <p className="form-error">{error}</p> : null}
+            <button className="primary-button" type="submit">Solicitar presupuesto por WhatsApp</button>
+            <p className="form-note">La solicitud se envia por la ruta interna de ShareWay Pro. El presupuesto se confirma manualmente.</p>
+          </form>
+
+          <aside className="content-section transfer-info">
+            <h2>Datos necesarios</h2>
+            <ul className="clean-list">
+              <li>Origen y destino exacto</li>
+              <li>Fecha y hora de recogida</li>
+              <li>Numero de pasajeros y maletas</li>
+              <li>Vuelo, hotel o estacion si aplica</li>
+            </ul>
+          </aside>
+        </section>
+      </main>
+    </>
   );
 }
