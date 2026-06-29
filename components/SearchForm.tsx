@@ -27,6 +27,22 @@ function buildInternalSearchUrl(params: {
   return `/buscar?${search.toString()}`;
 }
 
+function buildTransferUrl(params: {
+  origin: string;
+  destination: string;
+  date: string;
+  passengers: string;
+}) {
+  const search = new URLSearchParams({
+    origin: params.origin,
+    destination: params.destination,
+    date: params.date,
+    passengers: params.passengers
+  });
+
+  return `/traslados?${search.toString()}`;
+}
+
 function trackSearch(params: { origin: string; destination: string; mode: TravelMode; passengers: string }) {
   if (typeof window === 'undefined' || !window.gtag) return;
 
@@ -57,7 +73,7 @@ export default function SearchForm({ defaultMode = 'tren' }: { defaultMode?: Tra
     trackSearch({ origin, destination, mode, passengers });
 
     if (mode === 'transfer') {
-      window.location.href = `/contacto?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&date=${encodeURIComponent(date)}&passengers=${encodeURIComponent(passengers)}`;
+      window.location.href = buildTransferUrl({ origin, destination, date, passengers });
       return;
     }
     window.location.href = buildInternalSearchUrl({ origin, destination, date, passengers, mode });
