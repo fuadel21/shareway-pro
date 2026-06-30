@@ -23,6 +23,7 @@ export default function TrasladosPage() {
   const [bags, setBags] = useState('');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
+  const whatsappStatus = first(router.query.whatsapp);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -68,6 +69,13 @@ export default function TrasladosPage() {
           <h1>Solicita tu traslado.</h1>
           <p>Servicio para aeropuerto, estacion, hotel, eventos y rutas privadas. Envia origen, destino, fecha, hora, pasajeros y equipaje.</p>
         </section>
+
+        {whatsappStatus === 'missing' ? (
+          <div className="config-warning">
+            <strong>WhatsApp no esta configurado en Vercel.</strong>
+            <p>Anade la variable WHATSAPP_TRANSFER_URL en Production y haz Redeploy.</p>
+          </div>
+        ) : null}
 
         <section className="transfer-layout">
           <form className="search-card transfer-form" onSubmit={submit}>
