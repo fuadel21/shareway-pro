@@ -6,6 +6,13 @@ function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] || '' : value || '';
 }
 
+const faqs = [
+  ['¿El precio se confirma al momento?', 'No. Primero envias la solicitud y despues se confirma disponibilidad, vehiculo y precio final.'],
+  ['¿Sirve para aeropuertos y estaciones?', 'Si. Puedes solicitar recogidas en aeropuerto, estacion, hotel, apartamento o direccion privada.'],
+  ['¿Puedo pedir ida y vuelta?', 'Si. Indica la vuelta en el campo de notas con fecha, hora y punto de recogida.'],
+  ['¿Por que se piden maletas?', 'El equipaje ayuda a elegir el vehiculo adecuado, especialmente si viajan varias personas.']
+];
+
 export default function TrasladosPage() {
   const router = useRouter();
   const [origin, setOrigin] = useState('');
@@ -87,6 +94,19 @@ export default function TrasladosPage() {
               <li>Vuelo, hotel o estacion si aplica</li>
             </ul>
           </aside>
+        </section>
+
+        <section className="content-section faq-section">
+          <p className="eyebrow">Preguntas frecuentes</p>
+          <h2>Antes de pedir tu transfer</h2>
+          <div className="faq-grid">
+            {faqs.map(([question, answer]) => (
+              <article className="faq-item" key={question}>
+                <h3>{question}</h3>
+                <p>{answer}</p>
+              </article>
+            ))}
+          </div>
         </section>
       </main>
     </>
