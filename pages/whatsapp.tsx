@@ -7,7 +7,7 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   if (!base) {
     return {
       redirect: {
-        destination: '/contacto',
+        destination: '/traslados?whatsapp=missing',
         permanent: false
       }
     };
