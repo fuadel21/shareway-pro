@@ -13,6 +13,19 @@ const faqs = [
   ['¿Por que se piden maletas?', 'El equipaje ayuda a elegir el vehiculo adecuado, especialmente si viajan varias personas.']
 ];
 
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(([question, answer]) => ({
+    '@type': 'Question',
+    name: question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: answer
+    }
+  }))
+};
+
 export default function TrasladosPage() {
   const router = useRouter();
   const [origin, setOrigin] = useState('');
@@ -62,6 +75,7 @@ export default function TrasladosPage() {
         <title>Transfers privados | ShareWay Pro</title>
         <meta name="description" content="Solicita presupuesto para transfers privados a aeropuertos, estaciones, hoteles y rutas de Costa Brava desde ShareWay Pro." />
         <link rel="canonical" href="https://shareway.pro/traslados" />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       </Head>
       <main className="page-wrap transfer-page">
         <section className="page-hero">
