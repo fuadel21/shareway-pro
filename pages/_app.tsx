@@ -9,6 +9,7 @@ const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 const SITE_URL = 'https://shareway.pro';
 const DEFAULT_TITLE = 'ShareWay Pro | Trenes, autobuses y transfers';
 const DEFAULT_DESCRIPTION = 'Busca viajes en tren y autobus, consulta rutas populares y solicita transfers privados desde ShareWay Pro.';
+const DEFAULT_IMAGE = `${SITE_URL}/og-image.svg`;
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
@@ -21,9 +22,13 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta property="og:description" content={DEFAULT_DESCRIPTION} />
         <meta property="og:url" content={SITE_URL} />
         <meta property="og:type" content="website" />
+        <meta property="og:image" content={DEFAULT_IMAGE} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={DEFAULT_TITLE} />
         <meta name="twitter:description" content={DEFAULT_DESCRIPTION} />
+        <meta name="twitter:image" content={DEFAULT_IMAGE} />
       </Head>
       {GA_ID ? (
         <>
