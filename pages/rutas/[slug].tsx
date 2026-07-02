@@ -21,6 +21,36 @@ export const getStaticProps: GetStaticProps<{ route: PopularRoute }> = async ({ 
   return { props: { route } };
 };
 
+function buildRouteSchema(route: PopularRoute, canonical: string) {
+  const modeLabel = route.type === 'transfer' ? 'Transfer privado' : route.type === 'tren' ? 'Tren' : 'Autobus';
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: route.title,
+    description: route.description,
+    url: canonical,
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'ShareWay Pro',
+      url: SITE_URL
+    },
+    about: {
+      '@type': 'TravelAction',
+      name: `${modeLabel}: ${route.origin} a ${route.destination}`,
+      fromLocation: {
+        '@type': 'Place',
+        name: route.origin
+      },
+      toLocation: {
+        '@type': 'Place',
+        name: route.destination
+      },
+      instrument: modeLabel
+    }
+  };
+}
+
 export default function RoutePage({ route }: { route: PopularRoute }) {
   const searchParams = new URLSearchParams({
     origin: route.origin,
@@ -33,6 +63,7 @@ export default function RoutePage({ route }: { route: PopularRoute }) {
   const ctaHref = route.type === 'transfer' ? '/traslados' : `/#buscar`;
   const title = `${route.title} | ShareWay Pro`;
   const canonical = `${SITE_URL}/rutas/${route.slug}`;
+  const schema = buildRouteSchema(route, canonical);
 
   return (
     <>
@@ -44,6 +75,7 @@ export default function RoutePage({ route }: { route: PopularRoute }) {
         <meta property="og:description" content={route.description} />
         <meta property="og:url" content={canonical} />
         <meta property="og:type" content="website" />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       </Head>
       <main className="page-wrap route-page">
         <section className="page-hero">
