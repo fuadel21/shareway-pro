@@ -30,6 +30,10 @@ export default function App({ Component, pageProps }: AppProps) {
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#1267ff" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="application-name" content="ShareWay Pro" />
+        <meta name="apple-mobile-web-app-title" content="ShareWay Pro" />
         <meta property="og:site_name" content="ShareWay Pro" />
         <meta property="og:title" content={DEFAULT_TITLE} />
         <meta property="og:description" content={DEFAULT_DESCRIPTION} />
