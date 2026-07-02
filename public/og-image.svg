@@ -1,0 +1,33 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#F4F7FB"/>
+  <circle cx="130" cy="80" r="260" fill="#1267FF" fill-opacity="0.16"/>
+  <circle cx="1040" cy="560" r="300" fill="#0FC6A6" fill-opacity="0.18"/>
+  <rect x="72" y="72" width="1056" height="486" rx="48" fill="white" stroke="#DCE4EF" stroke-width="2"/>
+  <rect x="112" y="112" width="86" height="86" rx="28" fill="url(#logoGradient)"/>
+  <text x="155" y="168" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="46" font-weight="900" fill="white">S</text>
+  <text x="224" y="150" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="900" fill="#102033">ShareWay</text>
+  <text x="224" y="188" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" letter-spacing="8" fill="#607087">PRO</text>
+  <text x="112" y="306" font-family="Arial, Helvetica, sans-serif" font-size="68" font-weight="900" letter-spacing="-3" fill="#102033">Trenes, autobuses y transfers</text>
+  <text x="112" y="372" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#607087">Busca rutas, prepara tu viaje y solicita traslados privados.</text>
+  <g transform="translate(112 440)">
+    <rect width="185" height="54" rx="27" fill="#EEF3FB"/>
+    <text x="92" y="35" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#1267FF">Rutas</text>
+  </g>
+  <g transform="translate(318 440)">
+    <rect width="185" height="54" rx="27" fill="#EEF3FB"/>
+    <text x="92" y="35" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#1267FF">Transfers</text>
+  </g>
+  <g transform="translate(524 440)">
+    <rect width="185" height="54" rx="27" fill="#EEF3FB"/>
+    <text x="92" y="35" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#1267FF">Viajes</text>
+  </g>
+  <path d="M872 165C930 165 978 213 978 271C978 329 930 377 872 377C814 377 766 329 766 271C766 213 814 165 872 165Z" fill="#1267FF" fill-opacity="0.09"/>
+  <path d="M824 272H1012" stroke="#1267FF" stroke-width="18" stroke-linecap="round"/>
+  <path d="M956 216L1012 272L956 328" stroke="#1267FF" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <defs>
+    <linearGradient id="logoGradient" x1="112" y1="112" x2="198" y2="198" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1267FF"/>
+      <stop offset="1" stop-color="#0FC6A6"/>
+    </linearGradient>
+  </defs>
+</svg>
