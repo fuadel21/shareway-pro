@@ -11,6 +11,19 @@ const DEFAULT_TITLE = 'ShareWay Pro | Trenes, autobuses y transfers';
 const DEFAULT_DESCRIPTION = 'Busca viajes en tren y autobus, consulta rutas populares y solicita transfers privados desde ShareWay Pro.';
 const DEFAULT_IMAGE = `${SITE_URL}/og-image.svg`;
 
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'ShareWay Pro',
+  url: SITE_URL,
+  description: DEFAULT_DESCRIPTION,
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: `${SITE_URL}/buscar?origin={search_term_string}`,
+    'query-input': 'required name=search_term_string'
+  }
+};
+
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
@@ -29,6 +42,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="twitter:title" content={DEFAULT_TITLE} />
         <meta name="twitter:description" content={DEFAULT_DESCRIPTION} />
         <meta name="twitter:image" content={DEFAULT_IMAGE} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
       </Head>
       {GA_ID ? (
         <>
